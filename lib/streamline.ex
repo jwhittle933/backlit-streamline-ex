@@ -1,6 +1,6 @@
 defmodule Streamline do
   @moduledoc """
-  Documentation for `Streamline`.
+  `Streamline` lib for media parsing, conversion, and streaming.
   """
 
   @doc """
@@ -12,7 +12,7 @@ defmodule Streamline do
       :world
 
   """
-  def hello do
-    :world
+  def streamline do
+    :streamline
   end
 end
