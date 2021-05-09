@@ -8,8 +8,8 @@ defmodule Streamline do
 
   ## Examples
 
-      iex> Streamline.hello()
-      :world
+      iex> Streamline.streamline()
+      :streamline
 
   """
   def streamline do

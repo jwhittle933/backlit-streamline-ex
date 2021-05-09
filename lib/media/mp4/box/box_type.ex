@@ -10,9 +10,14 @@ defmodule Streamline.Media.MP4.Box.BoxType do
     #
   end
 
-  @type t() :: <<_::4, _::_*unit>>
+  @type t() :: binary()
 
-  def from(<<type::4, rest::binary>>) do
-    #
+  @spec from(iodata()) :: {iodata(), iodata()}
+  def from(<<name :: bytes - size(4), rest :: binary>>) do
+    {name, rest}
+  end
+
+  def from(<<data::binary>>) do
+    {"unknown", data}
   end
 end

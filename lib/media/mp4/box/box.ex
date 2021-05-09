@@ -2,16 +2,17 @@ defmodule Streamline.Media.MP4.Box do
   @moduledoc false
 
   defprotocol Boxed do
-    @spec type() :: String.t()
-    def type()
+    @spec type(any()) :: String.t()
+    def type(box)
 
     @spec write(iodata()) :: {any(), iodata()}
     def write(src)
 
-    @spec string() :: String.t()
-    def print()
+    @spec print(any()) :: String.t()
+    def print(box)
 
-    @spec info() :: Info.t()
+    @spec info(any()) :: Info.t()
+    def info(box)
   end
 
   defprotocol Write do

@@ -19,15 +19,12 @@ defmodule Streamline.Media.MP4.Box.Info do
 
   defimpl Box.Write, for: __MODULE__ do
     @doc """
-    write parses boxes with 4 byte sizes
+    write parses box headers for size and name
     """
     def write(<<size::4, name::4, rest::binary>>) do
       {%Info{}, rest}
     end
 
-    @doc """
-    write parses boxes with 8 byte sizes
-    """
     def write(<<size::8, name::4, rest::binary>>) do
       {%Info{}, rest}
     end

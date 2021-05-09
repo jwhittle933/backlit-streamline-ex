@@ -3,6 +3,6 @@ defmodule StreamlineTest do
   doctest Streamline
 
   test "greets the world" do
-    assert Streamline.hello() == :world
+    assert Streamline.streamline() == :streamline
   end
 end
