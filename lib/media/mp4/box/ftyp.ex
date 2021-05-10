@@ -7,9 +7,9 @@ defmodule Streamline.Media.MP4.Box.Ftyp do
 
   @type t() :: %Ftyp {
                   info: Info.t(),
-                  major_brand: <<_::bytes-size(4)>>,
+                  major_brand: <<_::4, _::_*8>>,
                   minor_version: integer,
-                  compatible_brands: list(<<_::bytes-size(4)>>)
+                  compatible_brands: list(<<_::4, _::_*8>>)
                }
 
   defstruct [:info, :major_brand, :minor_version, :compatible_brands]

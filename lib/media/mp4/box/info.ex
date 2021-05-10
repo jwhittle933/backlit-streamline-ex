@@ -7,26 +7,27 @@ defmodule Streamline.Media.MP4.Box.Info do
   alias Streamline.Media.MP4.Box.BoxType
   alias __MODULE__
 
-  @type t() :: %__MODULE__ {
-                  offset: integer,
-                  size: integer,
-                  type: BoxType.t(),
-                  header_size: integer,
-                  extend_to_eof: boolean
+  @behavior Streamline.Media.MP4.Box.Written
+  @small_header 8
+  @large_header 16
+
+  @type t() :: %Info {
+                 offset: integer,
+                 size: integer,
+                 type: BoxType.t(),
+                 header_size: integer,
+                 extend_to_eof: boolean
                }
 
   defstruct [:offset, :size, :type, :header_size, :extend_to_eof]
 
-  defimpl Box.Write, for: __MODULE__ do
-    @doc """
-    write parses box headers for size and name
-    """
-    def write(<<size::4, name::4, rest::binary>>) do
-      {%Info{}, rest}
-    end
+  def write(%Info{}, <<0x00 :: size(32), size :: bytes - size(4), name :: bytes - size(4), _ :: bytes>>) do
+    # 8 byte size header
+    %Info{}
+  end
 
-    def write(<<size::8, name::4, rest::binary>>) do
-      {%Info{}, rest}
-    end
+  def write(%Info{}, <<size :: bytes - size(4), name :: bytes - size(4), _ :: binary>>) do
+    # 4 byte size header
+    %Info{}
   end
 end

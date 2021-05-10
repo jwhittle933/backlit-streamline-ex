@@ -4,7 +4,7 @@ defmodule Streamline.Media do
   """
   alias Streamline.Connector.Connect
 
-  impl Connect do
+  defimpl Connect do
     def connect(to) do
       #
     end

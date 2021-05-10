@@ -14,10 +14,11 @@ defmodule Streamline.Media.MP4 do
                   ftyp: Ftyp.t(),
                   moov: Moov.t(),
                   free: any(),
-                  skip: any()
+                  skip: any(),
+                  valid?: boolean
                }
 
-  defstruct [:size, :ftyp, :moov, :free, :skip]
+  defstruct [:size, :ftyp, :moov, :free, :skip, :valid?]
 
   @spec open(iodata() | String.t()) :: {:ok | :error, MP4.t()}
   def open(<<size::bytes-size(4), ?f, ?t, ?y, ?p, data::binary>>) do
@@ -32,7 +33,7 @@ defmodule Streamline.Media.MP4 do
     #
   end
 
-  @spec open!({:ok | :error, iodata() | posix()} | iodata() | String.t()) :: MP4.t()
+  @spec open!({:ok | :error, iodata() | :file.posix()} | iodata() | String.t()) :: MP4.t()
   def open!({:ok, <<data::binary>>}) do
     #
   end
@@ -58,7 +59,7 @@ defmodule Streamline.Media.MP4 do
     #
   end
 
-  def handle(<<data::binary>>) when is_binary(filepath) do
+  def handle(<<data::binary>>) do
     #
   end
 end

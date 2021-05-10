@@ -1,24 +1,28 @@
 defmodule Streamline.Media.MP4.Box do
   @moduledoc false
-  @behavior Streamline.Media.MP4.Box.Boxed
+  alias Streamline.Media.MP4.Box.Info
+  alias __MODULE__
 
-  defprotocol Typed do
-    @spec type(any()) :: String.t()
+  @behaviour Streamline.Media.MP4.Box.Boxed
+
+  defprotocol Typeable do
+    @spec type(t) :: String.t()
     def type(box)
   end
 
-  defprotocol Write do
-    @spec write(iodata()) :: {any(), iodata()}
-    def write(src)
+  defprotocol Writeable do
+    @spec write(t, iodata()) :: t
+    def write(box, src)
   end
 
-  defprotocol Print do
-    @spec print(any()) :: String.t()
-    def print(box)
+  # String.Chars instead?
+  defprotocol Stringable do
+    @spec stringify(t) :: String.t()
+    def stringify(box)
   end
 
-  defprotocol Info do
-    @spec info(any()) :: Info.t()
+  defprotocol Infoable do
+    @spec info(t) :: Info.t()
     def info(box)
   end
 
@@ -26,18 +30,18 @@ defmodule Streamline.Media.MP4.Box do
   # Each behavior below should operate on a box
   # that implements the protocols above
   def type(box) do
-    #
+    Box.Typeable.type(box)
   end
 
   def write(box, iodata) do
-    #
+    Box.Writeable.write(box, iodata)
   end
 
   def stringify(box) do
-    #
+    Box.Stringable.stringify(box)
   end
 
   def info(box) do
-    #
+    Box.Infoable.info(box)
   end
 end
