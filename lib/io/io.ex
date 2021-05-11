@@ -6,6 +6,6 @@ defmodule Streamline.IO do
 
   @spec copy_n(Writeable.t(), IO.device() | iodata(), integer()) :: integer()
   def copy_n(box, device, n) do
-    Writeable.write(box, IO.getn(device, n))
+    Writeable.write(box, IO.binread(device, n))
   end
 end

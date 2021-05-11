@@ -21,13 +21,13 @@ defmodule Streamline.Media.MP4.Box.Info do
 
   defstruct [:offset, :size, :type, :header_size, :extend_to_eof]
 
-  def write(%Info{}, <<0x00 :: size(32), size :: bytes - size(4), name :: bytes - size(4), _ :: bytes>>) do
-    # 8 byte size header
-    %Info{}
+  def write(%Info{}, <<0x00 :: size(32), size :: size(32), name :: bytes - size(4), _ :: bytes>>) do
+    # 64 bit header size
+    %Info{size: size, name: name, header_size: 8, extend_to_eof: false}
   end
 
-  def write(%Info{}, <<size :: bytes - size(4), name :: bytes - size(4), _ :: binary>>) do
-    # 4 byte size header
-    %Info{}
+  def write(%Info{}, <<size :: size(32), name :: bytes - size(4), _ :: binary>>) do
+    # 32 bit header size
+    %Info{size: size, name: name, header_size: 4, extend_to_eof: false}
   end
 end
