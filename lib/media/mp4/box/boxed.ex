@@ -21,7 +21,7 @@ defmodule Streamline.Media.MP4.Box.Boxed.Written do
   @moduledoc """
   Written behavior module
   """
-  @callback write(term(), iodata()) :: integer
+  @callback write(term(), iodata()) :: term()
 end
 
 defmodule Streamline.Media.MP4.Box.Boxed.Stringified do

@@ -10,14 +10,14 @@ defmodule Streamline.Media.MP4.Box.BoxType do
     #
   end
 
-  @type t() :: binary()
+  @type t() :: <<_ :: 4, _ :: _ * 8>>
 
-  @spec from(iodata()) :: {iodata(), iodata()}
-  def from(<<name :: bytes - size(4), rest :: binary>>) do
-    {name, rest}
+  @spec from(iodata()) :: String.t()
+  def from(<<name :: bytes - size(4)>>) do
+    name
   end
 
-  def from(<<data::binary>>) do
-    {"unknown", data}
+  def from(_) do
+    "unknown"
   end
 end

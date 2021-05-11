@@ -6,26 +6,35 @@ defmodule Streamline.Media.MP4 do
   alias Streamline.Media.MP4.Box.{
     Ftyp,
     Moov
-  }
+    }
   alias Streamline.Media.MP4.Handler
 
   @type t() :: %MP4 {
-                  size: integer,
-                  ftyp: Ftyp.t(),
-                  moov: Moov.t(),
-                  free: any(),
-                  skip: any(),
-                  valid?: boolean
+                 size: integer,
+                 ftyp: Ftyp.t(),
+                 moov: Moov.t(),
+                 free: any(),
+                 skip: any(),
+                 valid?: boolean,
+                 d: IO.device()
                }
 
-  defstruct [:size, :ftyp, :moov, :free, :skip, :valid?]
+  defstruct [:size, :ftyp, :moov, :free, :skip, :valid?, :d]
 
-  @spec open(iodata() | String.t()) :: {:ok | :error, MP4.t()}
-  def open(<<size::bytes-size(4), ?f, ?t, ?y, ?p, data::binary>>) do
-    #
+  @spec open(iodata() | String.t() | IO.device()) :: {:ok | :error, MP4.t()}
+  def open(<<size :: size(32), ?f, ?t, ?y, ?p, data :: binary>>) do
+    {:ok, %MP4{}}
   end
 
   def open(filepath) when is_binary(filepath) do
+    with {:ok, f} <- File.open(filepath) do
+      {:ok, %MP4{d: f}}
+    else
+      {:error, exit} -> {:error, exit}
+    end
+  end
+
+  def open(device) do
     #
   end
 
@@ -34,7 +43,7 @@ defmodule Streamline.Media.MP4 do
   end
 
   @spec open!({:ok | :error, iodata() | :file.posix()} | iodata() | String.t()) :: MP4.t()
-  def open!({:ok, <<data::binary>>}) do
+  def open!({:ok, <<data :: binary>>}) do
     #
   end
 
@@ -42,11 +51,11 @@ defmodule Streamline.Media.MP4 do
     {:error, %MP4{valid?: false}}
   end
 
-  def open!(filepath) when is_binary(filepath) do
+  def open!(<<data :: binary>>) do
     # will a string filepath string be interpreted as binary?
   end
 
-  def open!(<<data::binary>>) do
+  def open!(filepath) when is_binary(filepath) do
     # will a string filepath string be interpreted as binary?
   end
 
@@ -59,7 +68,7 @@ defmodule Streamline.Media.MP4 do
     #
   end
 
-  def handle(<<data::binary>>) do
+  def handle(<<data :: binary>>) do
     #
   end
 end
