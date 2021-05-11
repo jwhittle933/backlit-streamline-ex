@@ -1,6 +1,6 @@
 defmodule Streamline.Result do
   @moduledoc """
-  Result Wrapper
+  Streamline Result Wrapper for processes that may error
   """
 
   defmodule ResultException do
@@ -10,14 +10,10 @@ defmodule Streamline.Result do
   @type t() :: {:ok | :error, term()}
 
   @spec ok(term()) :: t
-  def ok(arg) do
-    {:ok, arg}
-  end
+  def ok(arg), do: {:ok, arg}
 
   @spec error(term()) :: t
-  def error(arg) do
-    {:error, arg}
-  end
+  def error(arg), do: {:error, arg}
 
   @spec unwrap(t) :: term()
   def unwrap({:ok, arg}), do: arg

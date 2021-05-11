@@ -3,6 +3,7 @@ defmodule Streamline.Media.MP4 do
   MP4 base module for mp4 parsing and handling
   """
   alias __MODULE__
+  alias Streamline.Result
   alias Streamline.Media.MP4.Box.{
     Ftyp,
     Moov
@@ -21,17 +22,17 @@ defmodule Streamline.Media.MP4 do
 
   defstruct [:size, :ftyp, :moov, :free, :skip, :valid?, :d]
 
-  @spec open(iodata() | String.t() | IO.device()) :: {:ok | :error, MP4.t()}
+  @spec open(iodata() | String.t() | IO.device()) :: Result.t()
   def open(<<size :: size(32), ?f, ?t, ?y, ?p, data :: binary>>) do
-    {:ok, %MP4{}}
+    Result.ok(%MP4{})
   end
 
   def open(filepath) when is_binary(filepath) do
-    with {:ok, f} <- File.open(filepath) do
-      {:ok, %MP4{d: f}}
-    else
-      {:error, exit} -> {:error, exit}
-    end
+    filepath
+    |> File.open()
+    |> Result.expect("Could not open file")
+    |> parse_file()
+    |> Result.ok()
   end
 
   def open(device) do
@@ -70,5 +71,10 @@ defmodule Streamline.Media.MP4 do
 
   def handle(<<data :: binary>>) do
     #
+  end
+
+  @spec parse_file(IO.device() | iodata()) :: t
+  defp parse_file(device) do
+    %MP4{d: device}
   end
 end
