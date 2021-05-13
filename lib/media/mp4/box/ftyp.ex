@@ -4,7 +4,6 @@ defmodule Streamline.Media.MP4.Box.Ftyp do
   """
   alias __MODULE__
   alias Streamline.Media.MP4.Box.Info
-  alias Streamline.Media.MP4.Box.Written
 
   @type t() :: %Ftyp {
                  info: Info.t(),
@@ -15,7 +14,8 @@ defmodule Streamline.Media.MP4.Box.Ftyp do
 
   defstruct [:info, :major_brand, :minor_version, :compatible_brands]
 
-  def write(%Ftyp{}, <<data :: binary>>) do
-    data
+  @spec write(iodata()) :: t()
+  def write(%Info{} = i, <<data :: binary>>) do
+    %Ftyp{info: i}
   end
 end

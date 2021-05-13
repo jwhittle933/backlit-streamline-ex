@@ -1,12 +1,11 @@
-defmodule Streamline.Media.MP4.Box.Moov do
-  @moduledoc """
-  moov BMFF movie box
-  """
+defmodule Streamline.Media.MP4.Box.Mdat do
+  @moduledoc false
+
   alias __MODULE__
   alias Streamline.Media.MP4.Box.Info
 
   @type children :: list(any())
-  @type t() :: %Moov {
+  @type t() :: %Mdat {
                  info: Info.t(),
                  children: children() # moov has no defined fields; it wraps child boxes to be defined later
                }
@@ -15,6 +14,6 @@ defmodule Streamline.Media.MP4.Box.Moov do
 
   @spec write(iodata()) :: t()
   def write(%Info{} = i, <<data :: binary>>) do
-    %Moov{info: i}
+    %Mdat{info: i}
   end
 end

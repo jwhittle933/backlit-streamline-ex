@@ -10,11 +10,12 @@ defmodule Streamline.IO.Reader do
   alias __MODULE__
 
   @type t() :: %Reader {
-                 pos: integer,
-                 r: IO.device()
+                  pos: integer,
+                  r: IO.device(),
+                  last_read: iodata() | IO.nodata()
                }
 
-  defstruct [:pos, :r]
+  defstruct [:pos, :r, :last_read]
 
   @spec new(IO.device()) :: t
   def new(device), do: %Reader{r: device, pos: 0}
@@ -27,5 +28,13 @@ defmodule Streamline.IO.Reader do
   end
 
   @spec cursor(t) :: integer
-  def cursor(%Reader{pos: p}), do: p
+  def cursor(%Reader{r: device} = r) do
+    {:ok, p} = :file.position(device, :cur)
+    %Reader{r | r: device, pos: p}
+  end
+
+  @spec read(t(), non_neg_integer()) :: t()
+  def read(%Reader{r: r, pos: p}, n) do
+    %Reader{r: r, pos: p + n, last_read: IO.binread(r, n)}
+  end
 end

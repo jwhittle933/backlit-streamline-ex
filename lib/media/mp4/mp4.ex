@@ -4,29 +4,22 @@ defmodule Streamline.Media.MP4 do
   """
   alias __MODULE__
   alias Streamline.Result
-  alias Streamline.Media.MP4.Box.{
-    Ftyp,
-    Moov
-    }
+  alias Streamline.IO.Reader
   alias Streamline.Media.MP4.Handler
+  alias Streamline.Media.MP4.Box
+  alias Streamline.Media.MP4.Box.Info
 
   @type t() :: %MP4 {
                  size: integer,
-                 ftyp: Ftyp.t(),
-                 moov: Moov.t(),
-                 free: any(),
-                 skip: any(),
+                 children: [term()],
                  valid?: boolean,
-                 d: IO.device()
+                 d: Reader.t() | iodata(),
+                 open?: boolean
                }
 
-  defstruct [:size, :ftyp, :moov, :free, :skip, :valid?, :d]
+  defstruct [:size, :children, :valid?, :d, :open?]
 
-  @spec open(iodata() | String.t() | IO.device()) :: Result.t()
-  def open(<<size :: size(32), ?f, ?t, ?y, ?p, data :: binary>>) do
-    Result.ok(%MP4{})
-  end
-
+  @spec open(String.t() | IO.device()) :: Result.t()
   def open(filepath) when is_binary(filepath) do
     filepath
     |> File.open()
@@ -73,8 +66,64 @@ defmodule Streamline.Media.MP4 do
     #
   end
 
-  @spec parse_file(IO.device() | iodata()) :: t
+  @spec close(IO.device()) :: t()
+  def close(%MP4{d: device} = m) do
+    File.close(device)
+
+    %MP4{m | open?: false}
+  end
+
+  @doc """
+  parse_file consumes the IO.device
+  """
+  @spec parse_file(IO.device()) :: t
   defp parse_file(device) do
-    %MP4{d: device}
+    %MP4{d: Reader.new(device), open?: true, children: []}
+    |> read_boxes()
+  end
+
+  @spec read_boxes(t()) :: t()
+  def read_boxes(
+        %MP4{
+          d: %Reader{
+            last_read: :eof
+          }
+        } = m
+      ), do: close(m)
+
+  def read_boxes(%MP4{d: %Reader{last_read: nil} = reader, children: c} = m) do
+    m
+    |> read_header()
+    |> read_boxes()
+  end
+
+  def read_boxes(
+        %MP4{
+          d: %Reader{
+            last_read: <<data :: binary>>
+          } = reader,
+          children: c
+        } = m
+      ) do
+    info = Info.parse(data)
+    r = Reader.read(reader, info.size - info.header_size)
+    box = Box.write_box(info, r.last_read)
+    IO.inspect(box)
+
+    m
+    |> read_header()
+    |> read_boxes()
+  end
+
+  def read_header(%MP4{d: reader, children: c} = m) do
+    reader
+    |> Reader.read(8)
+    |> Reader.cursor()
+    |> (&apply_reader(m, &1)).()
+  end
+
+  @spec apply_reader(t(), Reader.t()) :: t()
+  defp apply_reader(%MP4{children: c, valid?: v, open?: o, size: s}, reader) do
+    %MP4{d: reader, children: c, valid?: v, open?: o, size: s}
   end
 end
