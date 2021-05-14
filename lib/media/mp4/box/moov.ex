@@ -13,7 +13,7 @@ defmodule Streamline.Media.MP4.Box.Moov do
 
   defstruct [:info, :children]
 
-  @spec write(iodata()) :: t()
+  @spec write(Info.t(), iodata()) :: t()
   def write(%Info{} = i, <<data :: binary>>) do
     %Moov{info: i}
   end

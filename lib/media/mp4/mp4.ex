@@ -19,7 +19,7 @@ defmodule Streamline.Media.MP4 do
 
   defstruct [:size, :children, :valid?, :d, :open?]
 
-  @spec open(String.t() | IO.device()) :: Result.t()
+  @spec open(String.t() | t() | IO.device()) :: Result.t()
   def open(filepath) when is_binary(filepath) do
     filepath
     |> File.open()
@@ -30,6 +30,10 @@ defmodule Streamline.Media.MP4 do
 
   def open(device) do
     #
+  end
+
+  def open(%MP4{} = m) do
+    m
   end
 
   def open(_) do
@@ -99,6 +103,7 @@ defmodule Streamline.Media.MP4 do
 
   def read_boxes(
         %MP4{
+          size: size,
           d: %Reader{
             last_read: <<data :: binary>>
           } = reader,
@@ -108,9 +113,8 @@ defmodule Streamline.Media.MP4 do
     info = Info.parse(data)
     r = Reader.read(reader, info.size - info.header_size)
     box = Box.write_box(info, r.last_read)
-    IO.inspect(box)
 
-    m
+    %MP4{m | children: c ++ [box], size: size + info.size}
     |> read_header()
     |> read_boxes()
   end

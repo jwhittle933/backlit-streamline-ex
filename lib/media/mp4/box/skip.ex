@@ -10,7 +10,7 @@ defmodule Streamline.Media.MP4.Box.Skip do
 
   defstruct [:info]
 
-  @spec write(iodata()) :: t()
+  @spec write(Info.t(), iodata()) :: t()
   def write(%Info{} = i, <<data :: binary>>) do
     %Skip{info: i}
   end

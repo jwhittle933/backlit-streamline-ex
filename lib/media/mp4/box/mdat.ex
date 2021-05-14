@@ -7,12 +7,13 @@ defmodule Streamline.Media.MP4.Box.Mdat do
   @type children :: list(any())
   @type t() :: %Mdat {
                  info: Info.t(),
-                 children: children() # moov has no defined fields; it wraps child boxes to be defined later
+                 children: children()
+                 # moov has no defined fields; it wraps child boxes to be defined later
                }
 
   defstruct [:info, :children]
 
-  @spec write(iodata()) :: t()
+  @spec write(Info.t(), iodata()) :: t()
   def write(%Info{} = i, <<data :: binary>>) do
     %Mdat{info: i}
   end

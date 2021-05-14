@@ -10,7 +10,7 @@ defmodule Streamline.Media.MP4.Box.Free do
 
   defstruct [:info]
 
-  @spec write(iodata()) :: t()
+  @spec write(Info.t(), iodata()) :: t()
   def write(%Info{} = i, <<data :: binary>>) do
     %Free{info: i}
   end
