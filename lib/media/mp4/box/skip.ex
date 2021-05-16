@@ -5,13 +5,14 @@ defmodule Streamline.Media.MP4.Box.Skip do
   alias Streamline.Media.MP4.Box.Info
 
   @type t() :: %Skip {
-                 info: Info.t()
+                 info: Info.t(),
+                 raw: iodata()
                }
 
-  defstruct [:info]
+  defstruct [:info, :raw]
 
   @spec write(Info.t(), iodata()) :: t()
   def write(%Info{} = i, <<data :: binary>>) do
-    %Skip{info: i}
+    %Skip{info: i, raw: data}
   end
 end

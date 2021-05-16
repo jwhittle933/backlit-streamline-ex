@@ -40,20 +40,6 @@ defmodule Streamline.Media.MP4.Box do
     Box.Infoable.info(box)
   end
 
-  @spec read_header(Reader.t()) :: Info.t()
-  def read_header(%Reader{} = r) do
-    r
-    |> Reader.read(8)
-    |> Reader.bytes() # wrap in Result?
-    |> Info.parse()
-  end
-
-  def read_box(%Info{type: t} = i, %Reader{} = r) do
-    r
-    |> Reader.read(Info.size(i))
-    |> Reader.bytes()
-  end
-
   @spec box_module(String.t()) :: module()
   def box_module(box_name) do
     :"Elixir.Streamline.Media.MP4.Box.#{:string.titlecase(box_name)}"

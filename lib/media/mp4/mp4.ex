@@ -13,12 +13,12 @@ defmodule Streamline.Media.MP4 do
                  children: [term()],
                  valid?: boolean,
                  d: Reader.t() | iodata(),
-                 open?: boolean
+                 open?: boolean | :unknown
                }
 
   defstruct [
     children: [],
-    valid?: false,
+    valid?: :unknown,
     d: nil,
     open?: false
   ]
@@ -28,7 +28,7 @@ defmodule Streamline.Media.MP4 do
     filepath
     |> File.open()
     |> Result.expect("Could not open #{filepath}")
-    |> (&%MP4{d: Reader.new(&1), open?: true, children: []}).()
+    |> (&%MP4{d: Reader.new(&1), open?: true, children: [], valid?: :unknown}).()
     |> Result.wrap()
   end
 
@@ -75,12 +75,18 @@ defmodule Streamline.Media.MP4 do
   end
 
   @spec close(IO.device()) :: t()
-  def close(%MP4{d: device} = m) do
+  def close(%MP4{d: %Reader{r: device}} = m) do
     File.close(device)
 
     %MP4{m | open?: false}
   end
 
+  @doc """
+  read_all consumes the IO.device and parses
+  all boxes
+
+  TODO: clean up duplication between arity
+  """
   @spec read_all(t() | IO.device() | String.t()) :: t()
   def read_all(%MP4{d: %Reader{r: reader}} = m) do
     reader
@@ -106,10 +112,5 @@ defmodule Streamline.Media.MP4 do
     |> Box.read()
     |> (&%MP4{children: &1}).()
     |> close()
-  end
-
-  @spec apply_reader(t(), Reader.t()) :: t()
-  defp apply_reader(%MP4{} = m, reader) do
-    %MP4{m | d: reader}
   end
 end
