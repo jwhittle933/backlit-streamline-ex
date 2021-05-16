@@ -3,7 +3,8 @@ defmodule Streamline.Media.MP4.Box.Moov do
   moov BMFF movie box
   """
   alias __MODULE__
-  alias Streamline.Media.MP4.Box.Info
+  alias Streamline.Media.MP4.Box
+  alias Box.Info
 
   @type children :: list(any())
   @type t() :: %Moov {
@@ -15,6 +16,8 @@ defmodule Streamline.Media.MP4.Box.Moov do
 
   @spec write(Info.t(), iodata()) :: t()
   def write(%Info{} = i, <<data :: binary>>) do
-    %Moov{info: i}
+    data
+    |> Box.read()
+    |> (&%Moov{info: i, children: &1}).()
   end
 end

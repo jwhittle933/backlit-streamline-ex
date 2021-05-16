@@ -26,9 +26,16 @@ defmodule Streamline.Media.MP4.Box.Mvhd do
                    Binary.i32(),
                    Binary.i32(),
                    Binary.i32(),
+                   Binary.i32(),
+                 },
+                 predefined: {
+                   Binary.i32(),
+                   Binary.i32(),
+                   Binary.i32(),
+                   Binary.i32(),
+                   Binary.i32(),
                    Binary.i32()
                  },
-                 predefined: iodata(),
                  next_track_id: Binary.u32(),
                  raw: iodata()
                }
@@ -52,7 +59,81 @@ defmodule Streamline.Media.MP4.Box.Mvhd do
   ]
 
   @spec write(Info.t(), iodata()) :: t()
-  def write(%Info{} = i, <<data :: binary>>) do
-    %Mvhd{info: i, raw: data}
+  def write(
+        %Info{} = i,
+        <<
+          v :: 8,
+          flags :: 32,
+          create :: 32,
+          mod :: 32,
+          timescale :: 32,
+          duration :: 64,
+          rate :: 32,
+          volume :: 16,
+          _ :: 16,
+          _ :: 32 * 2,
+          matrix :: 32 * 9,
+          predefined :: 32 * 6,
+          next :: 32,
+        >> = data
+      ) do
+    %Mvhd{
+      info: i,
+      version: v,
+      flags: flags,
+      creation_time: create,
+      modification_time: mod,
+      timescale: timescale,
+      duration: duration,
+      rate: rate,
+      volume: volume,
+      next_track_id: next,
+      raw: data
+    }
+    |> write_matrix(matrix)
+    |> write_predefined(matrix)
+  end
+
+  def write(
+        %Info{} = i,
+        <<
+          v :: 8,
+          flags :: 32,
+          create :: 64,
+          mod :: 64,
+          timescale :: 32,
+          duration :: 64,
+          rate :: 32,
+          volume :: 16,
+          _ :: 16,
+          _ :: 32 * 2,
+          matrix :: 32 * 9,
+          predefined :: 32 * 6,
+          next :: 32,
+        >> = data
+      ) do
+    %Mvhd{
+      info: i,
+      version: v,
+      flags: flags,
+      creation_time: create,
+      modification_time: mod,
+      timescale: timescale,
+      duration: duration,
+      rate: rate,
+      volume: volume,
+      next_track_id: next,
+      raw: data
+    }
+    |> write_matrix(matrix)
+    |> write_predefined(matrix)
+  end
+
+  defp write_matrix(%Mvhd{} = m, <<m0 :: 32, m1 :: 32, m2 :: 32, m3 :: 32, m4 :: 32, m5 :: 32, m6 :: 32, m7 :: 32, m8 :: 32>>) do
+    %Mvhd{m | matrix: {m0, m1, m2, m3, m4, m5, m6, m7, m8}}
+  end
+
+  defp write_predefined(%Mvhd{} = m, <<m0 :: 32, m1 :: 32, m2 :: 32, m3 :: 32, m4 :: 32, m5 :: 32>>) do
+    %Mvhd{m | predefined: {m0, m1, m2, m3, m4, m5}}
   end
 end
