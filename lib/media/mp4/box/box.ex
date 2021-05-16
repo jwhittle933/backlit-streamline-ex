@@ -1,6 +1,7 @@
 defmodule Streamline.Media.MP4.Box do
   @moduledoc false
-  alias Streamline.Media.MP4.Box.Info
+  alias Streamline.Media.MP4.Box.{Info, BoxType}
+  alias Streamline.IO.Reader
   alias __MODULE__
 
   @behaviour Streamline.Media.MP4.Box.Boxed
@@ -39,6 +40,20 @@ defmodule Streamline.Media.MP4.Box do
     Box.Infoable.info(box)
   end
 
+  @spec read_header(Reader.t()) :: Info.t()
+  def read_header(%Reader{} = r) do
+    r
+    |> Reader.read(8)
+    |> Reader.bytes() # wrap in Result?
+    |> Info.parse()
+  end
+
+  def read_box(%Info{type: t} = i, %Reader{} = r) do
+    r
+    |> Reader.read(Info.size(i))
+    |> Reader.bytes()
+  end
+
   @spec box_module(String.t()) :: module()
   def box_module(box_name) do
     :"Elixir.Streamline.Media.MP4.Box.#{:string.titlecase(box_name)}"
@@ -49,5 +64,33 @@ defmodule Streamline.Media.MP4.Box do
     t
     |> box_module()
     |> apply(:write, [i, data])
+  end
+
+  ######## EXPERIMENTAL (Successful) ########
+  @spec read(iodata, [term()]) :: [term()]
+  def read(data, acc \\ [], offset \\ 0)
+  def read(
+        <<
+          size :: size(32) - unsigned - big - integer,
+          name :: bytes - size(4),
+          data :: binary
+        >>,
+        acc,
+        offset
+      ) do
+    {box, rest} = box_from(data, size - 8)
+
+    name
+    |> BoxType.from()
+    |> (&%Info{size: size, type: &1, offset: offset}).()
+    |> write_box(box)
+    |> (&read(rest, acc ++ [&1], size + offset)).()
+  end
+
+  def read("", acc, _offset), do: acc
+
+  defp box_from(<<data :: binary>>, n_bytes) do
+    <<box :: bytes - size(n_bytes), rest :: binary>> = data
+    {box, rest}
   end
 end

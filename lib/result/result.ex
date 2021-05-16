@@ -9,11 +9,11 @@ defmodule Streamline.Result do
 
   @type t() :: {:ok | :error, term()}
 
-  @spec ok(term()) :: t
-  def ok(arg), do: {:ok, arg}
+  @spec wrap(term()) :: t
+  def wrap(arg), do: {:ok, arg}
 
-  @spec error(term()) :: t
-  def error(arg), do: {:error, arg}
+  @spec wrap_err(term()) :: t
+  def wrap_err(arg), do: {:error, arg}
 
   @spec unwrap(t) :: term()
   def unwrap({:ok, arg}), do: arg

@@ -9,13 +9,4 @@ defmodule Streamline.IO do
   def copy_n(box, device, n) do
     Writeable.write(box, IO.binread(device, n))
   end
-
-  @spec read_next(IO.device() | iodata() | :eof) :: term()
-  def read_next(<<data :: binary>>) do
-
-  end
-
-  def read_next(:eof) do
-
-  end
 end

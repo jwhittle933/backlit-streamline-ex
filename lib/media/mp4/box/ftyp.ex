@@ -12,7 +12,12 @@ defmodule Streamline.Media.MP4.Box.Ftyp do
                  compatible_brands: list(<<_ :: 4, _ :: _ * 8>>)
                }
 
-  defstruct [:info, :major_brand, :minor_version, :compatible_brands]
+  defstruct [
+    info: %Info{},
+    major_brand: "",
+    minor_version: 0,
+    compatible_brands: []
+  ]
 
   @spec write(Info.t(), iodata()) :: t()
   def write(

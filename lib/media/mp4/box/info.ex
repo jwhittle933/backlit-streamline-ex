@@ -21,14 +21,26 @@ defmodule Streamline.Media.MP4.Box.Info do
   defstruct [:offset, :size, :type, :header_size, :extend_to_eof]
 
   @spec read(Reader.t()) :: t()
-  def read(%Reader{pos: p} = r) do
-    %Reader{last_read: lr} = Reader.read(r, 8)
-
-    parse(lr)
+  def read(%Reader{} = r) do
+    r
+    |> Reader.read(8)
+    |> (&parse(&1.last_read)).()
   end
 
+  @spec parse(iodata() | nil | IO.nodata()) :: t()
   def parse(<<size :: size(32) - unsigned - big - integer, name :: bytes - size(4), _::binary>>) do
     # 32 bit header size
     %Info{size: size, type: BoxType.from(name), header_size: @small_header, extend_to_eof: false}
   end
+
+  def parse(nil) do
+    #
+  end
+
+  def parse(:eof) do
+    #
+  end
+
+  @spec size(t()) :: integer()
+  def size(%Info{size: s, header_size: hs}), do: s - hs
 end

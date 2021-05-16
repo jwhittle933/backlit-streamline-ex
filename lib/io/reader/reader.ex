@@ -15,7 +15,11 @@ defmodule Streamline.IO.Reader do
                   last_read: iodata() | IO.nodata()
                }
 
-  defstruct [:pos, :r, :last_read]
+  defstruct [
+    pos: 0,
+    r: nil,
+    last_read: nil
+  ]
 
   @spec new(IO.device()) :: t
   def new(device), do: %Reader{r: device, pos: 0}
@@ -27,11 +31,14 @@ defmodule Streamline.IO.Reader do
     %Reader{r: reader.r, pos: position}
   end
 
-  @spec cursor(t) :: integer
+  @spec cursor(t()) :: integer
   def cursor(%Reader{r: device} = r) do
     {:ok, p} = :file.position(device, :cur)
     %Reader{r | r: device, pos: p}
   end
+
+  @spec bytes(t()) :: iodata() | IO.nodata() | nil
+  def bytes(%Reader{last_read: lr}), do: lr
 
   @spec read(t(), non_neg_integer()) :: t()
   def read(%Reader{r: r, pos: p}, n) do

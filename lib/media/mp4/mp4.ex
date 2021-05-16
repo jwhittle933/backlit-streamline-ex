@@ -10,30 +10,34 @@ defmodule Streamline.Media.MP4 do
   alias Streamline.Media.MP4.Box.Info
 
   @type t() :: %MP4 {
-                 size: integer,
                  children: [term()],
                  valid?: boolean,
                  d: Reader.t() | iodata(),
                  open?: boolean
                }
 
-  defstruct [:size, :children, :valid?, :d, :open?]
+  defstruct [
+    children: [],
+    valid?: false,
+    d: nil,
+    open?: false
+  ]
 
   @spec open(String.t() | t() | IO.device()) :: Result.t()
   def open(filepath) when is_binary(filepath) do
     filepath
     |> File.open()
-    |> Result.expect("Could not open file")
-    |> parse_file()
-    |> Result.ok()
-  end
-
-  def open(device) do
-    #
+    |> Result.expect("Could not open #{filepath}")
+    |> (&%MP4{d: Reader.new(&1), open?: true, children: []}).()
+    |> Result.wrap()
   end
 
   def open(%MP4{} = m) do
     m
+  end
+
+  def open(device) do
+    Result.wrap(%MP4{d: %Reader{r: device}})
   end
 
   def open(_) do
@@ -77,57 +81,35 @@ defmodule Streamline.Media.MP4 do
     %MP4{m | open?: false}
   end
 
-  @doc """
-  parse_file consumes the IO.device
-  """
-  @spec parse_file(IO.device()) :: t
-  defp parse_file(device) do
-    %MP4{d: Reader.new(device), open?: true, children: []}
-    |> read_boxes()
-  end
-
-  @spec read_boxes(t()) :: t()
-  def read_boxes(
-        %MP4{
-          d: %Reader{
-            last_read: :eof
-          }
-        } = m
-      ), do: close(m)
-
-  def read_boxes(%MP4{d: %Reader{last_read: nil} = reader, children: c} = m) do
-    m
-    |> read_header()
-    |> read_boxes()
-  end
-
-  def read_boxes(
-        %MP4{
-          size: size,
-          d: %Reader{
-            last_read: <<data :: binary>>
-          } = reader,
-          children: c
-        } = m
-      ) do
-    info = Info.parse(data)
-    r = Reader.read(reader, info.size - info.header_size)
-    box = Box.write_box(info, r.last_read)
-
-    %MP4{m | children: c ++ [box], size: size + info.size}
-    |> read_header()
-    |> read_boxes()
-  end
-
-  def read_header(%MP4{d: reader, children: c} = m) do
+  @spec read_all(t() | IO.device() | String.t()) :: t()
+  def read_all(%MP4{d: %Reader{r: reader}} = m) do
     reader
-    |> Reader.read(8)
-    |> Reader.cursor()
-    |> (&apply_reader(m, &1)).()
+    |> IO.binread(:all)
+    |> Box.read()
+    |> (&%MP4{m | children: &1}).()
+    |> close()
+  end
+
+  def read_all(filepath) when is_binary(filepath) do
+    filepath
+    |> File.open()
+    |> Result.expect("Could not open #{filepath}")
+    |> IO.binread(:all)
+    |> Box.read()
+    |> (&%MP4{children: &1}).()
+    |> close()
+  end
+
+  def read_all(device) do
+    device
+    |> IO.binread(:all)
+    |> Box.read()
+    |> (&%MP4{children: &1}).()
+    |> close()
   end
 
   @spec apply_reader(t(), Reader.t()) :: t()
-  defp apply_reader(%MP4{children: c, valid?: v, open?: o, size: s}, reader) do
-    %MP4{d: reader, children: c, valid?: v, open?: o, size: s}
+  defp apply_reader(%MP4{} = m, reader) do
+    %MP4{m | d: reader}
   end
 end
