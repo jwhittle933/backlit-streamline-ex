@@ -84,7 +84,7 @@ defmodule Streamline.Media.MP4.Box do
     |> BoxType.from()
     |> (&%Info{size: size, type: &1, offset: offset}).()
     |> write_box(box)
-    |> (&read(rest, acc ++ [&1], size + offset)).()
+    |> (&read(rest, Keyword.put(acc, :"#{name}", &1), size + offset)).()
   end
 
   def read("", acc, _offset), do: acc
