@@ -1,5 +1,8 @@
 defmodule Streamline.Media.MP4.Box do
-  @moduledoc false
+  @moduledoc """
+  Box module parses box data and distributes it to the
+  appropriate module for writing
+  """
   alias Streamline.Media.MP4.Box.{Info, BoxType}
   alias Streamline.IO.Reader
   alias __MODULE__
@@ -42,7 +45,10 @@ defmodule Streamline.Media.MP4.Box do
 
   @spec box_module(String.t()) :: module()
   def box_module(box_name) do
-    :"Elixir.Streamline.Media.MP4.Box.#{:string.titlecase(box_name)}"
+    box_name
+    |> String.trim()
+    |> :string.titlecase()
+    |> (&:"Elixir.Streamline.Media.MP4.Box.#{&1}").()
   end
 
   @spec write_box(String.t(), iodata()) :: module()

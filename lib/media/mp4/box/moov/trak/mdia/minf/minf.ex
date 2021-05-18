@@ -1,13 +1,13 @@
-defmodule Streamline.Media.MP4.Box.Moov do
+defmodule Streamline.Media.MP4.Box.Minf do
   @moduledoc """
-  moov BMFF movie box
+  `minf` BMFF media information box
   """
   alias __MODULE__
   alias Streamline.Media.MP4.Box
   alias Box.Info
 
   @type children :: list(any())
-  @type t() :: %Moov {
+  @type t() :: %Minf{
                  info: Info.t(),
                  children: children()
                }
@@ -18,6 +18,6 @@ defmodule Streamline.Media.MP4.Box.Moov do
   def write(%Info{} = i, <<data :: binary>>) do
     data
     |> Box.read()
-    |> (&%Moov{info: i, children: &1}).()
+    |> (&%Minf{info: i, children: &1}).()
   end
 end
