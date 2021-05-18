@@ -102,8 +102,8 @@ defmodule Streamline.Media.MP4.Box.Mvhd do
           duration :: size(32) - unsigned - big - integer,
           rate :: size(32) - integer,
           volume :: size(16) - integer,
-          reserved :: size(16) - integer,
-          reserved2 :: size(64) - integer,
+          _ :: size(16) - integer,
+          _ :: size(64) - integer,
           matrix :: bitstring - size(@matrix_size),
           predefined :: size(@predefined_size) - integer,
           next :: size(32) - unsigned - big - integer,
@@ -119,8 +119,6 @@ defmodule Streamline.Media.MP4.Box.Mvhd do
       duration: duration,
       rate: rate,
       volume: volume,
-      reserved: reserved,
-      reserved2: reserved2,
       predefined: predefined,
       next_track_id: next,
       raw: data
@@ -134,13 +132,13 @@ defmodule Streamline.Media.MP4.Box.Mvhd do
           1 :: 8,
           flags :: bitstring - size(24),
           create :: size(64) - unsigned - big - integer,
-          mod :: size(64) - unsigned - big - integer,
+          modification :: size(64) - unsigned - big - integer,
           timescale :: size(32) - unsigned - big - integer,
           duration :: size(64) - unsigned - big - integer,
           rate :: size(32) - unsigned - big - integer,
           volume :: size(16) - unsigned - big - integer,
-          _ :: size(16) - unsigned - big - integer,
-          _ :: size(64),
+          _ :: size(16) - integer,
+          _ :: size(64) - integer,
           matrix :: bitstring - size(@matrix_size),
           predefined :: size(@predefined_size) - integer,
           next :: size(32) - unsigned - big - integer,
@@ -151,7 +149,7 @@ defmodule Streamline.Media.MP4.Box.Mvhd do
       version: 1,
       flags: flags,
       creation_time: create,
-      modification_time: mod,
+      modification_time: modification,
       timescale: timescale,
       duration: duration,
       rate: rate,
@@ -178,19 +176,5 @@ defmodule Streamline.Media.MP4.Box.Mvhd do
          >>
        ) do
     %Mvhd{m | matrix: {m0, m1, m2, m3, m4, m5, m6, m7, m8}}
-  end
-
-  defp write_predefined(
-         %Mvhd{} = m,
-         <<
-           p0 :: size(32) - big - integer,
-           p1 :: size(32) - big - integer,
-           p2 :: size(32) - big - integer,
-           p3 :: size(32) - big - integer,
-           p4 :: size(32) - big - integer,
-           p5 :: size(32) - big - integer
-         >>
-       ) do
-    %Mvhd{m | predefined: {p0, p1, p2, p3, p4, p5}}
   end
 end
