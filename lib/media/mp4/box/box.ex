@@ -58,7 +58,6 @@ defmodule Streamline.Media.MP4.Box do
     |> apply(:write, [i, data])
   end
 
-  ######## EXPERIMENTAL (Successful) ########
   @spec read(iodata, [term()]) :: [term()]
   def read(data, acc \\ [], offset \\ 0)
   def read(

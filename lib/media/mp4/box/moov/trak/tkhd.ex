@@ -1,4 +1,4 @@
-defmodule Streamline.Media.MP4.Box.Box.Tkhd do
+defmodule Streamline.Media.MP4.Box.Tkhd do
   @moduledoc false
   alias Streamline.Binary
   alias Streamline.Media.MP4.Box.Info

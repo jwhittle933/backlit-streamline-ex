@@ -1,5 +1,6 @@
 defmodule Streamline.Binary do
   @moduledoc false
+  use Bitwise
 
   @type i8() :: <<_ :: 8>>
   @type i16() :: <<_ :: 16>>
@@ -12,4 +13,15 @@ defmodule Streamline.Binary do
   @type u32() :: i32()
   @type u64() :: i64()
   @type usize() :: u32() | u64()
+
+  @packed 0x60
+  def language_code(lang) do
+    {
+      bsr(band(lang, 0x7c00), 10) + @packed,
+      bsr(band(lang, 0x03E0), 5) + @packed,
+      band(lang, 0x001F) + @packed
+    }
+  end
+
+  def strip_null_term(name), do: binary_part(name, 0, byte_size(name) - 1)
 end

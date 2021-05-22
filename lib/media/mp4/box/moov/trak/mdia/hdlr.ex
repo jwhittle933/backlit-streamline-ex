@@ -25,7 +25,7 @@ defmodule Streamline.Media.MP4.Box.Hdlr do
                # ‘null’ can be used in the primary meta box to indicate that
                # it is merely being used to hold resources.
                handler_type: String.t(),
-               reserved: list(Binary.u32()),
+               reserved: list(String.t() | Binary.u32()),
                # `name` is a null‐terminated string in UTF‐8 characters which gives
                # a human‐readable name for the track type (for debugging and
                # inspection purposes).
@@ -49,9 +49,9 @@ defmodule Streamline.Media.MP4.Box.Hdlr do
           flags :: bitstring - size(24),
           predefined :: size(32) - unsigned - big - integer,
           hdlr :: bytes - size(4),
-          r1 :: size(32),
-          r2 :: size(32),
-          r3 :: size(32),
+          r1 :: bytes - size(4),
+          r2 :: bytes - size(4),
+          r3 :: bytes - size(4),
           name :: binary
         >>
       ) do
@@ -61,10 +61,13 @@ defmodule Streamline.Media.MP4.Box.Hdlr do
       flags: flags,
       predefined: predefined,
       handler_type: hdlr,
-      reserved: [r1, r2, r3],
-      name: strip_null_term(name)
+      reserved: [string_or(r1), string_or(r2), string_or(r3)],
+      name: Binary.strip_null_term(name)
     }
   end
 
-  defp strip_null_term(name), do: binary_part(name, 0, byte_size(name) - 1)
+  @spec string_or(iodata()) :: String.t() | Binary.u32()
+  defp string_or(<<0, 0, 0, 0>>), do: 0
+  defp string_or(str) when is_binary(str), do: str
+  defp string_or(_), do: ""
 end
