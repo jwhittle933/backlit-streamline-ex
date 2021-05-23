@@ -3,11 +3,10 @@ defmodule Streamline.Media.MP4 do
   MP4 base module for mp4 parsing and handling
   """
   alias __MODULE__
+  alias MP4.{Find, Handler, Box}
   alias Streamline.Result
   alias Streamline.IO.Reader
-  alias Streamline.Media.MP4.Handler
-  alias Streamline.Media.MP4.Box
-  alias Streamline.Media.MP4.Box.Info
+  alias Box.Info
 
   @type t() :: %MP4 {
                  children: [term()],
@@ -37,7 +36,13 @@ defmodule Streamline.Media.MP4 do
   end
 
   def open(device) do
-    Result.wrap(%MP4{d: %Reader{r: device}})
+    Result.wrap(
+      %MP4{
+        d: %Reader{
+          r: device
+        }
+      }
+    )
   end
 
   def open(_) do
@@ -74,8 +79,23 @@ defmodule Streamline.Media.MP4 do
     #
   end
 
-  @spec close(IO.device()) :: t()
-  def close(%MP4{d: %Reader{r: device}} = m) do
+  @spec close(t()) :: t()
+  def close(%MP4{d: nil} = m), do: m
+  def close(
+        %MP4{
+          d: %Reader{
+            r: nil
+          }
+        } = m
+      ), do: m
+
+  def close(
+        %MP4{
+          d: %Reader{
+            r: device
+          }
+        } = m
+      ) do
     File.close(device)
 
     %MP4{m | open?: false}
@@ -88,7 +108,13 @@ defmodule Streamline.Media.MP4 do
   TODO: clean up duplication between arity
   """
   @spec read_all(t() | IO.device() | String.t()) :: t()
-  def read_all(%MP4{d: %Reader{r: reader}} = m) do
+  def read_all(
+        %MP4{
+          d: %Reader{
+            r: reader
+          }
+        } = m
+      ) do
     reader
     |> IO.binread(:all)
     |> Box.read()
@@ -113,4 +139,6 @@ defmodule Streamline.Media.MP4 do
     |> (&%MP4{children: &1}).()
     |> close()
   end
+
+  defdelegate find(mp4, key), to: Find
 end

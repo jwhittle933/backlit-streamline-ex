@@ -17,7 +17,6 @@ defmodule Streamline.Result do
 
   @spec unwrap(t) :: term()
   def unwrap({:ok, arg}), do: arg
-
   def unwrap({:error, arg}), do: arg
 
   @spec expect(t, String.t()) :: t
