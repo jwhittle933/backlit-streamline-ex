@@ -10,7 +10,7 @@ defmodule Streamline.Media.MP4.Box.Edts do
                  children: children() # moov has no defined fields; it wraps child boxes to be defined later
                }
 
-  defstruct [:info, :children]
+  defstruct [info: nil, children: []]
 
   @spec write(Info.t(), iodata()) :: t()
   def write(%Info{} = i, <<data :: binary>>) do

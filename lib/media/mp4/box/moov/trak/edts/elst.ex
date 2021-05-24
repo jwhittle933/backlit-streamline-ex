@@ -99,7 +99,7 @@ defmodule Streamline.Media.MP4.Box.Elst do
     |> write_entries(version, data)
   end
 
-  defp write_entries(%Elst{} = e, _, <<data :: binary>>), do: {e, data}
+  defp write_entries(%Elst{} = e, _, <<_data :: binary>>), do: e
 
   defp write_media_rate({%Elst{} = e, <<media_rate :: size(16) - integer, media_rate_fraction :: size(16) - integer>>}) do
     %Elst{e | media_rate: media_rate, media_rate_fraction: media_rate_fraction}

@@ -11,7 +11,7 @@ defmodule Streamline.Media.MP4.Box.Trak do
                  children: children()
                }
 
-  defstruct [:info, :children]
+  defstruct [info: nil, children: []]
 
   def write(%Info{} = i, <<data :: binary>>) do
     data

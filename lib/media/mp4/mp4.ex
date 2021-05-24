@@ -5,6 +5,7 @@ defmodule Streamline.Media.MP4 do
   alias __MODULE__
   alias MP4.{Find, Handler, Box}
   alias Streamline.Result
+  alias Streamline.Binary
   alias Streamline.IO.Reader
   alias Box.Info
 
@@ -12,14 +13,16 @@ defmodule Streamline.Media.MP4 do
                  children: [term()],
                  valid?: boolean,
                  d: Reader.t() | iodata(),
-                 open?: boolean | :unknown
+                 open?: boolean | :unknown,
+                 size: Binary.u64()
                }
 
   defstruct [
     children: [],
     valid?: :unknown,
     d: nil,
-    open?: false
+    open?: false,
+    size: 0
   ]
 
   @spec open(String.t() | t() | IO.device()) :: Result.t()
@@ -58,12 +61,10 @@ defmodule Streamline.Media.MP4 do
     {:error, %MP4{valid?: false}}
   end
 
-  def open!(<<data :: binary>>) do
-    # will a string filepath string be interpreted as binary?
-  end
-
   def open!(filepath) when is_binary(filepath) do
-    # will a string filepath string be interpreted as binary?
+    filepath
+    |> open()
+    |> Result.expect("could not open #{filepath}")
   end
 
   def open!(_) do
@@ -118,7 +119,7 @@ defmodule Streamline.Media.MP4 do
     reader
     |> IO.binread(:all)
     |> Box.read()
-    |> (&%MP4{m | children: &1}).()
+    |> with_children()
     |> close()
   end
 
@@ -128,7 +129,7 @@ defmodule Streamline.Media.MP4 do
     |> Result.expect("Could not open #{filepath}")
     |> IO.binread(:all)
     |> Box.read()
-    |> (&%MP4{children: &1}).()
+    |> with_children()
     |> close()
   end
 
@@ -136,8 +137,14 @@ defmodule Streamline.Media.MP4 do
     device
     |> IO.binread(:all)
     |> Box.read()
-    |> (&%MP4{children: &1}).()
+    |> with_children()
     |> close()
+  end
+
+  defp with_children(children \\ []) do
+    children
+    |> Enum.reduce(0, fn({_, %{info: %Info{size: s}}}, size) -> size + s end)
+    |> (&%MP4{children: children, size: &1}).()
   end
 
   defdelegate find(mp4, key), to: Find

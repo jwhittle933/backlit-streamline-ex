@@ -29,7 +29,7 @@ defmodule Streamline.Media.MP4.Box.Stbl do
                  children: children()
                }
 
-  defstruct [:info, :children]
+  defstruct [info: nil, children: []]
 
   @spec write(Info.t(), iodata()) :: t()
   def write(%Info{} = i, <<data :: binary>>) do

@@ -78,7 +78,7 @@ defmodule Streamline.Media.MP4.Box do
     |> (&read(rest, Keyword.put(acc, :"#{name}", &1), size + offset)).()
   end
 
-  def read("", acc, _offset), do: acc
+  def read("", acc, _offset), do: Enum.reverse(acc)
 
   defp box_from(<<data :: binary>>, n_bytes) do
     <<box :: bytes - size(n_bytes), rest :: binary>> = data
