@@ -3,7 +3,7 @@ defmodule Streamline.Media.MP4 do
   MP4 base module for mp4 parsing and handling
   """
   alias __MODULE__
-  alias MP4.{Find, Handler, Box}
+  alias MP4.{Find, Recurse, Handler, Box}
   alias Streamline.Result
   alias Streamline.Binary
   alias Streamline.IO.Reader
@@ -141,11 +141,17 @@ defmodule Streamline.Media.MP4 do
     |> close()
   end
 
+  @spec with_children([Box.t()]) :: t()
   defp with_children(children \\ []) do
     children
-    |> Enum.reduce(0, fn({_, %{info: %Info{size: s}}}, size) -> size + s end)
+    |> Enum.reduce(
+         0,
+         fn ({_, %{info: %Info{size: s}}}, size) -> size + s end
+       )
     |> (&%MP4{children: children, size: &1}).()
   end
 
   defdelegate find(mp4, key), to: Find
+  defdelegate recurse(mp4, acc, fun), to: Recurse
+  defdelegate print(mp4), to: Recurse, as: :print_all
 end

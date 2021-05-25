@@ -6,41 +6,35 @@ defmodule Streamline.Media.MP4.Recurse do
   alias Streamline.Media.MP4
   alias MP4.Box.Info
 
-  def all_boxes(%MP4{children: []}, _key), do: Result.wrap_err(:no_children)
-  def all_boxes(%MP4{children: c}, _key) do
-    #
+  def recurse(mp4, fun, acc \\ [])
+  def recurse(_, fun, _acc) when not is_function(fun, 1), do: Result.wrap_err(:invalid_callback)
+  def recurse(%{children: c} = box, fun, acc), do: recurse(c, fun, acc ++ [fun.(box)])
+  def recurse(box, fun, acc) when is_map(box), do: acc ++ [fun.(box)]
+
+  def recurse([{_, %{children: c} = box} | tail], fun, acc) do
+    recurse(tail, fun, acc ++ [fun.(box)] ++ recurse(c, fun, acc))
   end
 
-  def rprint(%{info: i, children: c}) do
-    print(i)
-    rprint(c)
+  def recurse([{name, box} | tail], fun, acc), do: recurse(tail, fun, acc ++ [fun.(box)])
+  def recurse([], _fun, acc), do: acc
+  def recurse(nil, _fun, acc), do: acc
+
+  def print_all(%MP4{} = m) do
+    recurse(m, &print/1)
   end
 
-  def rprint(%{children: c} = child) do
-    print(%Info{type: "mp4", size: 0, offset: 0})
-    rprint(c)
-  end
-
-  def rprint([{_, %{info: i, children: c}} | tail]) do
-    print(i)
-    rprint(c)
-    rprint(tail)
-  end
-
-  def rprint([{_, %{info: i}} | tail]) do
-    print(i)
-    rprint(tail)
-  end
-
-  def rprint([]), do: :ok
-
-  def rprint(nil) do
-    print(%Info{type: "unknown", size: "unknown", offset: "unknown"})
-  end
-
-  defp print(%Info{type: t, size: s, offset: o}) do
+  defp print(
+         %{
+           info: %Info{
+             type: t,
+             size: s,
+             offset: o
+           }
+         }
+       ) do
     IO.puts("[#{t}] offset=#{o} size=#{s} ")
+    nil
   end
 
-  defp print(nil), do: :ok
+  defp print(_), do: nil
 end

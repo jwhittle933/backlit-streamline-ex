@@ -9,6 +9,8 @@ defmodule Streamline.Media.MP4.Box do
 
   @behaviour Streamline.Media.MP4.Box.Boxed
 
+  @type t :: term()
+
   defprotocol Typeable do
     @spec type(t) :: String.t()
     def type(box)
