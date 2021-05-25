@@ -1,5 +1,7 @@
 defmodule Streamline.Binary do
-  @moduledoc false
+  @moduledoc """
+  Module `binary` for bitstring and bytes operations
+  """
   use Bitwise
 
   @type i8() :: <<_ :: 8>>

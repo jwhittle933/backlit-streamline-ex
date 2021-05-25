@@ -4,36 +4,29 @@ defmodule Streamline.Media.MP4.Find do
   """
   alias Streamline.Result
   alias Streamline.Media.MP4
+  alias MP4.Box.Info
+  alias MP4.Recurse
 
   @find_opts [:truncate]
 
   @doc """
   `find` recursively searches the mp4 for a box
   """
-  @spec find(MP4.t(), String.t() | atom()) :: Result.t()
-  def find(%MP4{children: []}, _key), do: Result.wrap_err(:no_children)
-  def find(%MP4{children: c}, key) when is_binary(key), do: find(c, String.to_atom(key))
-
-  # TODO: make `find` the final function, with multi-arity; do away with find_all_children
-  def find(%{info: i, children: c}, key) when is_atom(key) do
-    IO.puts("find in #{i.type}")
-    with {:ok, child} <- find_key(c, key) do
-      Result.wrap(child)
-    else
-      {:error, _} ->
-        find_in_children(c, key)
-    end
-  end
-
-  def find(%{children: c} = child, key) when is_atom(key) do
-    IO.puts("find in mp4")
-    with {:ok, child} = r <- find_key(c, key) do
-      r
-    else
-      {:error, _} ->
-        find_in_children(c, key)
-    end
-  end
+  @spec find(MP4.t(), String.t() | atom(), [atom()]) :: Result.t()
+  def find(box, key, opts \\ [])
+  def find(box, key, _opts) when is_atom(key), do: find(box, Atom.to_string(key))
+  def find(box, key, _opts) when is_binary(key), do: Recurse.recurse(
+    box,
+    fn
+      %{
+        info: %{
+          type: ^key
+        }
+      } = box, result -> Result.wrap(box)
+      _box, result -> result
+    end,
+    Result.wrap_err(:key_not_found)
+  )
 
   @spec find_key([term()], atom()) :: Result.t()
   defp find_key(nil, key), do: Result.wrap_err(:no_children)
@@ -48,23 +41,16 @@ defmodule Streamline.Media.MP4.Find do
   end
 
   @spec find_in_children([term()], atom()) :: Result.t()
-  defp find_in_children([{box, %{children: c} = child} | tail], key) do
-    IO.puts("\tsearching in #{box}")
+  defp find_in_children([{ box, %{ children: c } = child } | tail], key) do
     child
     |> find(key)
     |> case do
-         {:ok, child} ->
+         { :ok, child } ->
            child
 
          _ ->
-           IO.puts("\tsearching in #{box}")
            find_in_children(tail, key)
        end
-    #    with {:ok, child} <- find_key(c, key) do
-    #      child
-    #    else
-    #      {:error, _} -> find_in_children(tail, key)
-    #    end
   end
 
   defp find_in_children([_ | tail], key), do: find_in_children(tail, key)
