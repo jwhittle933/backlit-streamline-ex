@@ -1,6 +1,6 @@
 defmodule Streamline.Result do
   @moduledoc """
-  Streamline Result Wrapper for processes that may error
+  Result handles monadic {:ok, _}/{:error, _} return values
   """
 
   defmodule ResultException do

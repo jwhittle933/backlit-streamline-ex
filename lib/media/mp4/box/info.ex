@@ -1,11 +1,12 @@
 defmodule Streamline.Media.MP4.Box.Info do
   @moduledoc """
-  Info represents an elementary read on the bytestream
+  Info represents an elementary read on the byte stream
   to extract the box size and type
   """
   alias __MODULE__
-  alias Streamline.Media.MP4.Box.BoxType
+  alias Streamline.Binary
   alias Streamline.IO.Reader
+  alias Streamline.Media.MP4.Box.BoxType
 
   @small_header 8
   @large_header 16
@@ -19,6 +20,11 @@ defmodule Streamline.Media.MP4.Box.Info do
                }
 
   defstruct [:offset, :size, :type, :header_size, :extend_to_eof]
+
+  @spec from(BoxType.t(), Binary.u32(), Binary.u32()) :: t()
+  def from(type, size, offset) do
+    %Info{type: type, size: size, offset: offset}
+  end
 
   @spec read(Reader.t()) :: t()
   def read(%Reader{} = r) do
@@ -40,7 +46,4 @@ defmodule Streamline.Media.MP4.Box.Info do
   def parse(:eof) do
     #
   end
-
-  @spec size(t()) :: integer()
-  def size(%Info{size: s, header_size: hs}), do: s - hs
 end

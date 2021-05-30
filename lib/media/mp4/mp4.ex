@@ -151,7 +151,10 @@ defmodule Streamline.Media.MP4 do
     |> (&%MP4{children: children, size: &1}).()
   end
 
-  defdelegate find(mp4, key), to: Find
-  defdelegate recurse(mp4, acc, fun), to: Recurse
-  defdelegate print(mp4), to: Recurse, as: :print_all
+  defdelegate find(box, key), to: Find
+  defdelegate find!(box, key), to: Find
+  defdelegate first(box), to: Box
+  defdelegate first!(box), to: Box
+  defdelegate recurse(box, acc, fun), to: Recurse
+  defdelegate print(box), to: Recurse, as: :print_all
 end

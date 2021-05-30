@@ -3,13 +3,14 @@ defmodule Streamline.Media.MP4.Box do
   Box module parses box data and distributes it to the
   appropriate module for writing
   """
-  alias Streamline.Media.MP4.Box.{Info, BoxType}
-  alias Streamline.IO.Reader
   alias __MODULE__
+  alias Streamline.Result
+  alias Streamline.Media.MP4.Box.{ Info, BoxType }
 
   @behaviour Streamline.Media.MP4.Box.Boxed
 
   @type t :: term()
+  @type children :: [term()]
 
   defprotocol Typeable do
     @spec type(t) :: String.t()
@@ -54,7 +55,7 @@ defmodule Streamline.Media.MP4.Box do
   end
 
   @spec write_box(String.t(), iodata()) :: module()
-  def write_box(%Info{type: t} = i, data) do
+  def write_box(%Info{ type: t } = i, data) do
     t
     |> box_module()
     |> apply(:write, [i, data])
@@ -71,19 +72,42 @@ defmodule Streamline.Media.MP4.Box do
         acc,
         offset
       ) do
-    {box, rest} = box_from(data, size - 8)
+    { box, rest } = box_from(data, size - 8)
 
     name
     |> BoxType.from()
-    |> (&%Info{size: size, type: &1, offset: offset}).()
+    |> Info.from(size, offset)
     |> write_box(box)
-    |> (&read(rest, Keyword.put(acc, :"#{name}", &1), size + offset)).()
+    |> (&read(rest, acc ++ [{ :"#{name}", &1 }], size + offset)).()
   end
 
-  def read("", acc, _offset), do: Enum.reverse(acc)
+  def read("", acc, _offset), do: acc
 
-  defp box_from(<<data :: binary>>, n_bytes) do
-    <<box :: bytes - size(n_bytes), rest :: binary>> = data
-    {box, rest}
+
+  defmodule NoChildrenException do
+    defexception [message: "Box contains no children"]
+  end
+
+  @doc """
+  `first` retrieves the first child box contained in a parent
+  """
+  @spec first(term()) :: Result.t()
+  def first(%{ children: nil }), do: Result.wrap_err(:nil_children)
+  def first(%{ children: [] }), do: Result.wrap_err(:empty_children)
+  def first(%{ children: [{ _, child } | _] }), do: Result.wrap(child)
+  def first(_), do: Result.wrap_err(:no_child_box)
+
+  @doc """
+  `first!` retrieves the first child box contained in a parent
+  """
+  @spec first!(term()) :: Result.t()
+  def first!(%{ children: nil }), do: raise(Box.NoChildrenException, message: "Nil children")
+  def first!(%{ children: [] }), do: raise(Box.NoChildrenException, message: "Empty children")
+  def first!(%{ children: [{_, child} | _] }), do: child
+  def first!(_), do: raise(Box.NoChildrenException, message: "Box does not contain children")
+
+  defp box_from(<< data :: binary >>, n_bytes) do
+    << box :: bytes - size(n_bytes), rest :: binary >> = data
+    { box, rest }
   end
 end

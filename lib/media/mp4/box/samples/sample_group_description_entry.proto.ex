@@ -1,4 +1,4 @@
-defprotocol Streamline.Media.MP4.Box.Sgpd.SampleGroupDescriptionEntry do
+defprotocol Streamline.Media.MP4.Box.SampleGroupDescriptionEntry do
   @moduledoc """
   `SampleGroupDescriptionEntry` protocol
   """
@@ -26,11 +26,5 @@ defprotocol Streamline.Media.MP4.Box.Sgpd.SampleGroupDescriptionEntry do
     SubtitleSampleGroupEntry
 
     TextSampleGroupEntry
-  """
-end
-
-defmodule Streamline.Media.MP4.Box.Sample do
-  @moduledoc """
-  Sample
   """
 end

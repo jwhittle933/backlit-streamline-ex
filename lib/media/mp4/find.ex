@@ -10,7 +10,7 @@ defmodule Streamline.Media.MP4.Find do
   @find_opts [:truncate]
 
   @doc """
-  `find` recursively searches the mp4 for a box
+  `find` recursively searches the mp4 for a box and returns a Result
   """
   @spec find(MP4.t(), String.t() | atom(), [atom()]) :: Result.t()
   def find(box, key, opts \\ [])
@@ -28,32 +28,22 @@ defmodule Streamline.Media.MP4.Find do
     Result.wrap_err(:key_not_found)
   )
 
-  @spec find_key([term()], atom()) :: Result.t()
-  defp find_key(nil, key), do: Result.wrap_err(:no_children)
-  defp find_key([], key), do: Result.wrap_err(:no_children)
-  defp find_key(children, key) when is_list(children) do
-    with true <- Keyword.has_key?(children, key) do
-      Result.wrap(Keyword.fetch!(children, key))
-    else
-      _ ->
-        Result.wrap_err(:key_not_found)
-    end
+  @doc """
+  `find!` recursively searches the mp4 for a box.
+  The result is unwrapped, either with the value
+  or raising an error
+  """
+  @spec find!(MP4.t(), String.t() | atom(), [atom()]) :: Result.t()
+  def find!(box, key, opts \\ [])
+  def find!(box, key, opts) when is_atom(key) do
+    box
+    |> find(Atom.to_string(key), opts)
+    |> Result.expect("Box #{key} not found")
   end
 
-  @spec find_in_children([term()], atom()) :: Result.t()
-  defp find_in_children([{ box, %{ children: c } = child } | tail], key) do
-    child
-    |> find(key)
-    |> case do
-         { :ok, child } ->
-           child
-
-         _ ->
-           find_in_children(tail, key)
-       end
+  def find!(box, key, opts) do
+    box
+    |> find(key, opts)
+    |> Result.expect("Box #{key} not found")
   end
-
-  defp find_in_children([_ | tail], key), do: find_in_children(tail, key)
-  defp find_in_children([], _), do: Result.wrap_err(:key_not_found)
-  defp find_in_children(nil, _), do: Result.wrap_err(:key_not_found)
 end

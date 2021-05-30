@@ -61,9 +61,9 @@ defmodule Streamline.Media.MP4.Box.Stsd do
                # (0 or 1 in this specification)
                version: Binary.u8(),
                # `flags` is a map of flags
-               flags: <<_ :: 24>>,
+               flags: << _ :: 24 >>,
                entry_count: Binary.u32(),
-               entries: [%{format: Binary.u32(), data_reference_index: Binary.u16()}],
+               entries: [%{ format: Binary.u32(), data_reference_index: Binary.u16() }],
                children: children()
              }
 
@@ -78,7 +78,7 @@ defmodule Streamline.Media.MP4.Box.Stsd do
 
   @spec write(Info.t(), iodata()) :: t()
   def write(
-        %Info{} = i,
+        %Info{ } = i,
         <<
           v :: 8,
           flags :: bitstring - size(24),
@@ -86,13 +86,15 @@ defmodule Streamline.Media.MP4.Box.Stsd do
           rest :: binary
         >>
       ) do
-    %Stsd{info: i, version: v, flags: flags, entry_count: entry_count}
+    rest
+    |> Box.read()
+    |> (&%Stsd{ info: i, version: v, flags: flags, entry_count: entry_count, children: &1 }).()
   end
 
   defp write_entries(
-         %Stsd{entry_count: ec, entries: entries} = s,
+         %Stsd{ entry_count: ec, entries: entries } = s,
          <<
-#           format :: size(32) - unsigned - big - integer,
+           #           format :: size(32) - unsigned - big - integer,
            _ :: size(8),
            _ :: size(8),
            _ :: size(8),
@@ -104,9 +106,9 @@ defmodule Streamline.Media.MP4.Box.Stsd do
          >>
        )
        when length(entries) < ec do
-    %Stsd{s | entries: entries ++ [%{data_reference_index: dref_index}]}
+    %Stsd{ s | entries: entries ++ [%{ data_reference_index: dref_index }] }
     |> write_entries(rest)
   end
 
-  defp write_entries(%Stsd{} = s, <<rest :: binary>>), do: {s, rest}
+  defp write_entries(%Stsd{ } = s, << rest :: binary >>), do: { s, rest }
 end
