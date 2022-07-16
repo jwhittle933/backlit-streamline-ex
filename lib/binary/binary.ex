@@ -16,6 +16,8 @@ defmodule Streamline.Binary do
   @type u64() :: i64()
   @type usize() :: u32() | u64()
 
+  @type c128() :: << _ :: 128 >>
+
   @packed 0x60
   def language_code(lang) do
     {
@@ -39,4 +41,7 @@ defmodule Streamline.Binary do
        do: acc
            |> Enum.reverse
            |> :binary.list_to_bin()
+
+  def bool(0), do: false
+  def bool(1), do: true
 end

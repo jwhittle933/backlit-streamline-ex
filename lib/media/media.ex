@@ -13,9 +13,26 @@ defmodule Streamline.Media do
   defstruct [:type, :data, :valid?, :errors]
 
   @doc """
-  parse_media takes raw input and returns the media type
+  `media?` reads and reports whether or not the content is
+  media encoded
   """
-  def parse_media() do
+  def media?(filepath) when is_binary(filepath) do
+    #
+  end
+
+  def media?(<< data :: binary >>) do
+    #
+  end
+
+  def media?(device) do
+    #
+  end
+
+  @doc """
+  `fragmented?` reads and reports whether the media content
+  is fragmented
+  """
+  def fragmented?() do
     #
   end
 end

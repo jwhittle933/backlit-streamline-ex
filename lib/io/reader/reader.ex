@@ -28,7 +28,7 @@ defmodule Streamline.IO.Reader do
   def seek(%Reader{ } = reader, position) do
     :file.position(reader.r, position)
 
-    %Reader{ r: reader.r, pos: position }
+    %Reader{ reader | r: reader.r, pos: position }
   end
 
   @spec cursor(t()) :: integer
@@ -44,4 +44,6 @@ defmodule Streamline.IO.Reader do
   def read(%Reader{ r: r, pos: p }, n) do
     %Reader{ r: r, pos: p + n, last_read: IO.binread(r, n) }
   end
+
+  def last(%Reader{ last_read: lr }), do: lr
 end
